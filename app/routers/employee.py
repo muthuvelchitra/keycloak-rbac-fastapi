@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
+
 from app.permissions import require_role
+from app.schemas.response import ApiResponse
 
 router = APIRouter(
     prefix="/employee",
@@ -7,18 +9,26 @@ router = APIRouter(
 )
 
 
-@router.get("/dashboard")
+@router.get("/dashboard", response_model=ApiResponse)
 def employee_dashboard(user=Depends(require_role("employee"))):
-    return {
-        "message": "Welcome Employee",
-        "user": user["preferred_username"],
-        "role": "employee"
-    }
+    return ApiResponse(
+        success=True,
+        message="Employee dashboard fetched successfully",
+        data={
+            "username": user["preferred_username"],
+            "role": "employee"
+        }
+    )
 
 
-@router.get("/profile")
+@router.get("/profile", response_model=ApiResponse)
 def employee_profile(user=Depends(require_role("employee"))):
-    return {
-        "message": "Employee Profile",
-        "requested_by": user["preferred_username"]
-    }
+    return ApiResponse(
+        success=True,
+        message="Employee profile fetched successfully",
+        data={
+            "username": user["preferred_username"],
+            "email": user.get("email"),
+            "role": "employee"
+        }
+    )
