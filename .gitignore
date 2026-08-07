@@ -1,0 +1,28 @@
+#python:
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+#virtual environment
+venv/
+.env
+#vs code:
+.vscode/
+#database
+.db/
+#build
+build/
+dist/
+*.egg-info/
+#logs
+*.log
+#os
+.DS_Store
+thumbs.db
+#pytest
+.pytest_cache/
+#coverage
+.coverage
+htmlcov/
+#ide
+.idea/
