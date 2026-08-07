@@ -1,16 +1,24 @@
+from fastapi import FastAPI
 from fastapi import FastAPI, Depends
+
 from app.auth import keycloak_openid
 from app.dependencies import get_current_user
+from app.routers import admin, manager, employee, hr
 
-app = FastAPI(title="Keycloak RBAC Project")
+app = FastAPI(
+    title="Keycloak RBAC Project",
+    version="1.0.0"
+)
 
 
-@app.get("/")
+@app.get("/", tags=["Home"])
 def home():
-    return {"message": "Keycloak RBAC Project is Running"}
+    return {
+        "message": "Keycloak RBAC Project is Running"
+    }
 
 
-@app.post("/login")
+@app.post("/login", tags=["Authentication"])
 def login(username: str, password: str):
     return keycloak_openid.token(
         username=username,
@@ -18,58 +26,12 @@ def login(username: str, password: str):
     )
 
 
-@app.get("/profile")
+@app.get("/profile", tags=["Authentication"])
 def profile(user=Depends(get_current_user)):
     return user
 
 
-@app.get("/admin")
-def admin(user=Depends(get_current_user)):
-    roles = user["realm_access"]["roles"]
-
-    if "admin" not in roles:
-        return {"detail": "Access Denied"}
-
-    return {
-        "message": "Welcome Admin",
-        "user": user["preferred_username"]
-    }
-
-
-@app.get("/manager")
-def manager(user=Depends(get_current_user)):
-    roles = user["realm_access"]["roles"]
-
-    if "manager" not in roles:
-        return {"detail": "Access Denied"}
-
-    return {
-        "message": "Welcome Manager",
-        "user": user["preferred_username"]
-    }
-
-
-@app.get("/employee")
-def employee(user=Depends(get_current_user)):
-    roles = user["realm_access"]["roles"]
-
-    if "employee" not in roles:
-        return {"detail": "Access Denied"}
-
-    return {
-        "message": "Welcome Employee",
-        "user": user["preferred_username"]
-    }
-
-
-@app.get("/hr")
-def hr(user=Depends(get_current_user)):
-    roles = user["realm_access"]["roles"]
-
-    if "hr" not in roles:
-        return {"detail": "Access Denied"}
-
-    return {
-        "message": "Welcome HR",
-        "user": user["preferred_username"]
-    }
+app.include_router(admin.router)
+app.include_router(manager.router)
+app.include_router(employee.router)
+app.include_router(hr.router)
