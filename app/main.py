@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from app.auth import keycloak_openid
+from app.dependencies import get_current_user
 
 app = FastAPI(title="Keycloak RBAC Project")
 
@@ -11,9 +12,12 @@ def home():
 
 @app.post("/login")
 def login(username: str, password: str):
-    token = keycloak_openid.token(
+    return keycloak_openid.token(
         username=username,
         password=password,
     )
 
-    return token
+
+@app.get("/profile")
+def profile(user=Depends(get_current_user)):
+    return user

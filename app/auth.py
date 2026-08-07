@@ -6,3 +6,9 @@ keycloak_openid = KeycloakOpenID(
     client_id=settings.KEYCLOAK_CLIENT_ID,
     realm_name=settings.KEYCLOAK_REALM,
 )
+
+public_key = (
+    "-----BEGIN PUBLIC KEY-----\n"
+    + keycloak_openid.public_key()
+    + "\n-----END PUBLIC KEY-----"
+)
