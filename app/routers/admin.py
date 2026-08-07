@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+
 from app.permissions import require_role
 
 router = APIRouter(
@@ -11,7 +12,7 @@ router = APIRouter(
 def admin_dashboard(user=Depends(require_role("admin"))):
     return {
         "message": "Welcome Admin",
-        "user": user["preferred_username"],
+        "username": user["preferred_username"],
         "role": "admin"
     }
 
@@ -19,6 +20,6 @@ def admin_dashboard(user=Depends(require_role("admin"))):
 @router.get("/users")
 def get_users(user=Depends(require_role("admin"))):
     return {
-        "message": "List of users",
+        "message": "User list fetched successfully",
         "requested_by": user["preferred_username"]
     }
