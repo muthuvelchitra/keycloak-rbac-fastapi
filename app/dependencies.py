@@ -20,7 +20,6 @@ def get_current_user(
             algorithms=[settings.ALGORITHM],
             audience="account",
         )
-
         return payload
 
     except JWTError:
@@ -28,3 +27,18 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Token",
         )
+
+
+def require_role(role: str):
+    def role_checker(user=Depends(get_current_user)):
+        roles = user.get("realm_access", {}).get("roles", [])
+
+        if role not in roles:
+            raise HTTPException(
+                status_code=403,
+                detail="Access Denied"
+            )
+
+        return user
+
+    return role_checker

@@ -21,3 +21,55 @@ def login(username: str, password: str):
 @app.get("/profile")
 def profile(user=Depends(get_current_user)):
     return user
+
+
+@app.get("/admin")
+def admin(user=Depends(get_current_user)):
+    roles = user["realm_access"]["roles"]
+
+    if "admin" not in roles:
+        return {"detail": "Access Denied"}
+
+    return {
+        "message": "Welcome Admin",
+        "user": user["preferred_username"]
+    }
+
+
+@app.get("/manager")
+def manager(user=Depends(get_current_user)):
+    roles = user["realm_access"]["roles"]
+
+    if "manager" not in roles:
+        return {"detail": "Access Denied"}
+
+    return {
+        "message": "Welcome Manager",
+        "user": user["preferred_username"]
+    }
+
+
+@app.get("/employee")
+def employee(user=Depends(get_current_user)):
+    roles = user["realm_access"]["roles"]
+
+    if "employee" not in roles:
+        return {"detail": "Access Denied"}
+
+    return {
+        "message": "Welcome Employee",
+        "user": user["preferred_username"]
+    }
+
+
+@app.get("/hr")
+def hr(user=Depends(get_current_user)):
+    roles = user["realm_access"]["roles"]
+
+    if "hr" not in roles:
+        return {"detail": "Access Denied"}
+
+    return {
+        "message": "Welcome HR",
+        "user": user["preferred_username"]
+    }
