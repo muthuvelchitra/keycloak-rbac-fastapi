@@ -1,14 +1,20 @@
-import os
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-load_dotenv()
 
-class Settings:
-    KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL")
-    KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM")
-    KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID")
+class Settings(BaseSettings):
 
-    SECRET_KEY = os.getenv("SECRET_KEY")
-    ALGORITHM = os.getenv("ALGORITHM")
+    KEYCLOAK_SERVER_URL: str
+    KEYCLOAK_REALM: str
+    KEYCLOAK_CLIENT_ID: str
+
+    ALGORITHM: str = "RS256"
+
+    DATABASE_URL: str
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore"
+    )
+
 
 settings = Settings()
