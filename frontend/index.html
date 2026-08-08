@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>RBAC Keycloak Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+<main class="container">
+
+    <!-- LOGIN -->
+
+    <section
+        id="loginView"
+        class="card login-card"
+    >
+
+        <h1>RBAC Keycloak</h1>
+
+        <p>
+            Login using your Keycloak account.
+        </p>
+
+
+        <form id="loginForm">
+
+            <label>
+                Username
+
+                <input
+                    id="username"
+                    required
+                >
+
+            </label>
+
+
+            <label>
+                Password
+
+                <input
+                    id="password"
+                    type="password"
+                    required
+                >
+
+            </label>
+
+
+            <button type="submit">
+                Login
+            </button>
+
+        </form>
+
+
+        <div
+            id="loginMessage"
+            class="message"
+        ></div>
+
+    </section>
+
+
+    <!-- DASHBOARD -->
+
+    <section
+        id="dashboardView"
+        class="hidden"
+    >
+
+        <header class="topbar">
+
+            <div>
+
+                <h1>
+                    RBAC Dashboard
+                </h1>
+
+                <span id="welcome"></span>
+
+            </div>
+
+
+            <button
+                id="logoutBtn"
+                class="secondary"
+            >
+                Logout
+            </button>
+
+        </header>
+
+
+        <div class="grid">
+
+
+            <!-- PROFILE -->
+
+            <article class="card">
+
+                <h2>
+                    Profile
+                </h2>
+
+                <pre id="profile"></pre>
+
+            </article>
+
+
+            <!-- AUTHORIZED AREAS -->
+
+            <article class="card">
+
+                <h2>
+                    Authorized Areas
+                </h2>
+
+                <div
+                    id="actions"
+                    class="actions"
+                ></div>
+
+            </article>
+
+        </div>
+
+
+        <!-- API RESPONSE -->
+
+        <article class="card">
+
+            <h2>
+                API Response
+            </h2>
+
+            <pre id="result">
+Select an authorized area.
+            </pre>
+
+        </article>
+
+    </section>
+
+</main>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>uv

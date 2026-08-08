@@ -1,97 +1,150 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from pathlib import Path
 
-from app.auth import keycloak_openid
-from app.dependencies import get_current_user
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
-from app.routers import admin, manager, employee, hr
-
-from app.exceptions.handlers import register_exception_handlers
-
+from app.auth import router as auth_router
 from app.core.logger import logger
+from app.database import create_users_table, test_database_connection
+from app.exceptions.handlers import register_exception_handlers
+from app.permissions import router as permissions_router
 
+from app.routers.admin import router as admin_router
+from app.routers.employee import router as employee_router
+from app.routers.hr import router as hr_router
+from app.routers.manager import router as manager_router
+from app.routers.users import router as users_router
+
+
+# ============================================================
+# PATHS
+# ============================================================
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = BASE_DIR / "frontend"
+
+
+# ============================================================
+# FASTAPI APPLICATION
+# ============================================================
 
 app = FastAPI(
-    title="Keycloak RBAC Project",
-    version="1.0.0"
+    title="RBAC Keycloak API",
+    description="Role Based Access Control API using FastAPI, Keycloak and PostgreSQL",
+    version="1.0.0",
 )
 
 
-# Register global exception handlers
+# ============================================================
+# CORS
+# ============================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ============================================================
+# EXCEPTION HANDLERS
+# ============================================================
+
 register_exception_handlers(app)
 
 
-# Register routers
-app.include_router(admin.router)
-app.include_router(manager.router)
-app.include_router(employee.router)
-app.include_router(hr.router)
+# ============================================================
+# ROUTERS
+# ============================================================
+
+app.include_router(auth_router)
+app.include_router(permissions_router)
+
+app.include_router(users_router)
+
+app.include_router(admin_router)
+app.include_router(hr_router)
+app.include_router(manager_router)
+app.include_router(employee_router)
 
 
-logger.info("Keycloak RBAC application started")
+# ============================================================
+# FRONTEND
+# ============================================================
+
+app.mount(
+    "/ui",
+    StaticFiles(directory=FRONTEND_DIR, html=True),
+    name="frontend",
+)
 
 
-@app.get("/")
+# ============================================================
+# STARTUP
+# ============================================================
+
+@app.on_event("startup")
+def startup_event():
+
+    logger.info("Starting RBAC application")
+
+    # --------------------------------------------------------
+    # PostgreSQL connection test
+    # --------------------------------------------------------
+
+    if not test_database_connection():
+
+        logger.error("PostgreSQL connection failed")
+
+        raise RuntimeError(
+            "Unable to connect to PostgreSQL"
+        )
+
+    logger.info(
+        "PostgreSQL connection verified"
+    )
+
+    # --------------------------------------------------------
+    # Create database tables
+    # --------------------------------------------------------
+
+    create_users_table()
+
+    logger.info(
+        "Application startup complete"
+    )
+
+
+# ============================================================
+# HOME
+# ============================================================
+
+@app.get(
+    "/",
+    tags=["Default"]
+)
 def home():
 
-    logger.info("Home endpoint accessed")
-
     return {
-        "message": "Keycloak RBAC Project is Running"
+        "message": "RBAC Keycloak API is running",
+        "frontend": "/ui",
+        "swagger": "/docs",
     }
 
 
-@app.post("/login")
-def login(
-    username: str,
-    password: str
-):
+# ============================================================
+# HEALTH CHECK
+# ============================================================
 
-    logger.info(
-        "Login attempt | User: %s",
-        username
-    )
+@app.get(
+    "/health",
+    tags=["Default"]
+)
+def health_check():
 
-    try:
-
-        token = keycloak_openid.token(
-            username=username,
-            password=password,
-        )
-
-        logger.info(
-            "Login successful | User: %s",
-            username
-        )
-
-        return token
-
-    except Exception as exc:
-
-        logger.warning(
-            "Login failed | User: %s | Error: %s",
-            username,
-            str(exc)
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password"
-        )
-
-
-@app.get("/profile")
-def profile(
-    user=Depends(get_current_user)
-):
-
-    username = user.get(
-        "preferred_username",
-        "unknown"
-    )
-
-    logger.info(
-        "Profile accessed | User: %s",
-        username
-    )
-
-    return user
+    return {
+        "status": "healthy"
+    }
