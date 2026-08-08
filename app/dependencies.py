@@ -4,6 +4,8 @@ from jose import jwt, JWTError
 
 from app.auth import public_key
 from app.config import settings
+from app.core.logger import logger
+
 
 security = HTTPBearer()
 
@@ -14,31 +16,31 @@ def get_current_user(
     token = credentials.credentials
 
     try:
+
         payload = jwt.decode(
             token,
             public_key,
             algorithms=[settings.ALGORITHM],
             audience="account",
         )
+
+        username = payload.get("preferred_username", "unknown")
+
+        logger.info(
+            "Authentication successful | User: %s",
+            username
+        )
+
         return payload
 
-    except JWTError:
+    except JWTError as exc:
+
+        logger.warning(
+            "Authentication failed | Invalid or expired token | Error: %s",
+            str(exc)
+        )
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Token",
         )
-
-
-def require_role(role: str):
-    def role_checker(user=Depends(get_current_user)):
-        roles = user.get("realm_access", {}).get("roles", [])
-
-        if role not in roles:
-            raise HTTPException(
-                status_code=403,
-                detail="Access Denied"
-            )
-
-        return user
-
-    return role_checker
